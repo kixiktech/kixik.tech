@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matrix-inspired Website</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
+            background-color: black;
+            color: #d2b48c;
+            font-family: 'Courier New', monospace;
+        }
+        #matrix-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        #typing-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 24px;
+            text-align: center;
+            z-index: 2;
+        }
+        #logo-right {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 36px;
+            z-index: 2;
+            font-family: Arial, Helvetica, sans-serif;
+            font-weight: bold;
+            letter-spacing: 2px;
+        }
+        #logo-right span:last-child {
+            display: inline-block;
+            transform: scaleX(-1);
+        }
+        #logo-left {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 2;
+            width: 36px;
+            height: 36px;
+        }
+        #logo-left .x, #logo-left .i {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        #logo-left .x::before, 
+        #logo-left .x::after,
+        #logo-left .i::before {
+            content: '';
+            position: absolute;
+            background-color: #d2b48c;
+        }
+        #logo-left .x::before,
+        #logo-left .x::after {
+            width: 2px;
+            height: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        #logo-left .x::before {
+            transform: translateX(-50%) rotate(45deg);
+        }
+        #logo-left .x::after {
+            transform: translateX(-50%) rotate(-45deg);
+        }
+        #logo-left .i::before {
+            width: 2px;
+            height: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+    </style>
+</head>
+<body>
+    <canvas id="matrix-bg"></canvas>
+    <div id="typing-text"></div>
+    <div id="logo-right">KIXI<span>K</span></div>
+    <div id="logo-left">
+        <div class="x"></div>
+        <div class="i"></div>
+    </div>
+
+    <script>
+        // Matrix background code (unchanged)
+        const canvas = document.getElementById('matrix-bg');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#$%^&*()_+-=[]{}|;:,.<>?';
+        const columns = canvas.width / 20;
+        const drops = [];
+
+        for (let i = 0; i < columns; i++) {
+            drops[i] = 1;
+        }
+
+        let mouseX = 0;
+        let mouseY = 0;
+
+        function drawMatrix() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = 'rgba(50, 50, 50, 0.5)';
+            ctx.font = '15px monospace';
+
+            for (let i = 0; i < drops.length; i++) {
+                const text = characters.charAt(Math.floor(Math.random() * characters.length));
+                const x = i * 20;
+                const y = drops[i] * 20;
+
+                // Apply gravity effect
+                const dx = x - mouseX;
+                const dy = y - mouseY;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                const maxDistance = 100;
+
+                if (distance < maxDistance) {
+                    const force = (1 - distance / maxDistance) * 5;
+                    ctx.fillText(text, x + dx / distance * force, y + dy / distance * force);
+                } else {
+                    ctx.fillText(text, x, y);
+                }
+
+                if (y > canvas.height && Math.random() > 0.975) {
+                    drops[i] = 0;
+                }
+                drops[i]++;
+            }
+        }
+
+        window.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+        });
+
+        // Typing effect (unchanged)
+        const text = "automating the future -- while building niche focused software today.";
+        const typingText = document.getElementById('typing-text');
+        let index = 0;
+
+        function typeText() {
+            if (index < text.length) {
+                typingText.textContent += text.charAt(index);
+                index++;
+                setTimeout(typeText, 100);
+            } else {
+                setTimeout(fadeOut, 3000);
+            }
+        }
+
+        function fadeOut() {
+            let opacity = 1;
+            const fadeInterval = setInterval(() => {
+                if (opacity > 0) {
+                    opacity -= 0.1;
+                    typingText.style.opacity = opacity;
+                } else {
+                    clearInterval(fadeInterval);
+                    typingText.textContent = '';
+                    typingText.style.opacity = 1;
+                    index = 0;
+                    setTimeout(typeText, 500);
+                }
+            }, 100);
+        }
+
+        typeText();
+        setInterval(drawMatrix, 50);
+
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+    </script>
+</body>
+</html>
